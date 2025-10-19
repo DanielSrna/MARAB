@@ -10,7 +10,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "A simple solution for quickly integrating a registration, login, and authorization system into your server.",
   "dependencies": {
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
