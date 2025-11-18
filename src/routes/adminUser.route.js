@@ -1,5 +1,6 @@
 import {registerUser} from "../controller/register.controller.js";
 import {loginUser} from "../controller/login.controller.js";
+import {logoutUser} from "../controller/logout.controller.js";
 import {verifyEmail} from "../controller/verifyEmail.controller.js";
 import { loginValidator } from "../validators/login/login.validator.js";
 import { registerValidator } from "../validators/register/register.validator.js";
@@ -13,6 +14,9 @@ router.post('/register', registerValidator, validateRequest, registerUser);
 
 // Ruta para iniciar sesión
 router.post('/login', loginValidator, validateRequest, loginUser);
+
+// Ruta para cerrar sesión
+router.post('/logout', logoutUser);
 
 // Ruta para verificar el email del usuario
 router.get('/verify-email', verifyEmail);
