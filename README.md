@@ -57,3 +57,64 @@ For example:
     }
 ## VerifyEmail
 On this endpoint, you just need to click on the link sent to your email.
+
+## Logout
+For the logout request, you must include the refresh token in the request body:
+
+    {
+       "refreshToken": "your_refresh_token_here"
+    }
+
+The request type must be **POST** to:
+
+    {URL}/api/auth/logout
+
+You must also include the **Authorization** header with the access token:
+
+    Authorization: Bearer your_access_token_here
+
+## Refresh Token
+To refresh the access token when it expires, send a **POST** request to:
+
+    {URL}/api/auth/refresh-token
+
+With the following body:
+
+    {
+       "refreshToken": "your_refresh_token_here"
+    }
+
+## Request Password Reset
+To request a password reset, send a **POST** request to:
+
+    {URL}/api/auth/request-password-reset
+
+With the following body:
+
+    {
+       "email": "juan@ejemplo.com"
+    }
+
+You will receive an email with a link to reset your password.
+
+## Reset Password
+To reset the password using the token received by email, send a **POST** request to:
+
+    {URL}/api/auth/reset-password
+
+With the following body:
+
+    {
+       "token": "token_from_email",
+       "newPassword": "NewPassword123!"
+    }
+
+## Protected Routes
+Some routes require authentication. Include the access token in the Authorization header:
+
+    Authorization: Bearer your_access_token_here
+
+Example protected routes:
+- **GET** `/api/auth/profile` - Get user profile (requires authentication)
+- **GET** `/api/auth/admin/users` - Admin only route (requires admin role)
+

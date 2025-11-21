@@ -12,7 +12,7 @@ export const loginUser = async (req, res) => {
         }
 
         // Verificar contraseña
-        const isPasswordValid = (password === user.password);
+        const isPasswordValid = await user.comparePassword(password);
         if (!isPasswordValid) {
             return res.status(400).json({ message: "Credenciales invalidas" });
         }

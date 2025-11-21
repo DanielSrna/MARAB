@@ -1,9 +1,19 @@
 
 import express from 'express';
+import cors from 'cors';
 import adminUserRoutes from '../routes/adminUser.route.js';
 
 
 const app = express();
+
+// Configuración de CORS
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || '*',
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 app.get("/", (req, res) => {

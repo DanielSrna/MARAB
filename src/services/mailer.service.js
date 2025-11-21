@@ -1,7 +1,7 @@
 //Servicio de mensajería para confirmar email con nodemailer
 
 import nodemailer from 'nodemailer';
-import { generateVerificationToken } from './jwt.service.js';
+import { generateVerificationToken, generateResetPasswordToken } from './jwt.service.js';
 
 //Configuración del transporter de nodemailer
 const getTransporter = () => {
@@ -45,6 +45,40 @@ export const sendVerificationEmail = async (user) => {
         console.log(`Correo de verificación enviado a ${user.email}`);
     } catch (error) {
         console.error("Error al enviar el correo de verificación:", error);
+        throw error;
+    }
+};
+
+export const sendResetPasswordEmail = async (email) => {
+    let token;
+    let resetLink;
+    try {
+        token = await generateResetPasswordToken({ email });
+        resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+    } catch (error) {
+        console.error("Error al generar el token de recuperación:", error);
+        throw error;
+    }
+
+    const mailOptions = {
+        from: "no-reply@marab.com",
+        to: email,
+        subject: 'Recuperación de contraseña',
+        html: `
+            <h1>Recuperación de contraseña</h1>
+            <p>Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace:</p>
+            <a href="${resetLink}">Restablecer contraseña</a>
+            <p>Este enlace expirará en 1 hora.</p>
+            <p>Si no solicitaste este cambio, ignora este correo.</p>
+        `,
+    };
+
+    try {
+        const transporter = getTransporter();
+        await transporter.sendMail(mailOptions);
+        console.log(`Correo de recuperación enviado a ${email}`);
+    } catch (error) {
+        console.error("Error al enviar el correo de recuperación:", error);
         throw error;
     }
 };
