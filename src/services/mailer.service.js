@@ -21,7 +21,9 @@ export const sendVerificationEmail = async (user) => {
     let verificationLink;
     try {
         token = await generateVerificationToken({ email: user.email });
-        verificationLink = `${process.env.FRONTEND_URL}/api/auth/verify-email?token=${token}`;
+        // Usar la URL del backend para el endpoint de verificación
+        const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`;
+        verificationLink = `${backendUrl}/api/auth/verify-email?token=${token}`;
     } catch (error) {
         console.error("Error al generar el token de verificación:", error);
         throw error;
@@ -51,14 +53,17 @@ export const sendVerificationEmail = async (user) => {
 
 export const sendResetPasswordEmail = async (email) => {
     let token;
-    let resetLink;
     try {
         token = await generateResetPasswordToken({ email });
-        resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
     } catch (error) {
         console.error("Error al generar el token de recuperación:", error);
         throw error;
     }
+
+    // Link al frontend si existe y no está vacío, sino solo mostrar el token
+    const frontendResetLink = process.env.FRONTEND_URL && process.env.FRONTEND_URL.trim() !== ''
+        ? `${process.env.FRONTEND_URL}/reset-password?token=${token}`
+        : null;
 
     const mailOptions = {
         from: "no-reply@marab.com",
@@ -66,9 +71,21 @@ export const sendResetPasswordEmail = async (email) => {
         subject: 'Recuperación de contraseña',
         html: `
             <h1>Recuperación de contraseña</h1>
-            <p>Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace:</p>
-            <a href="${resetLink}">Restablecer contraseña</a>
-            <p>Este enlace expirará en 1 hora.</p>
+            <p>Has solicitado restablecer tu contraseña.</p>
+            ${frontendResetLink 
+                ? `<p><a href="${frontendResetLink}">Haz clic aquí para restablecer tu contraseña</a></p>`
+                : `<p><strong>Token de recuperación:</strong></p>
+                   <p style="background:#f4f4f4;padding:10px;word-break:break-all;font-family:monospace;">${token}</p>
+                   <p>Para restablecer tu contraseña, envía una petición POST a:</p>
+                   <p><code>POST ${process.env.BACKEND_URL}/api/auth/reset-password</code></p>
+                   <p>Con el siguiente body:</p>
+                   <pre style="background:#f4f4f4;padding:10px;">
+{
+  "token": "el_token_de_arriba",
+  "newPassword": "tu_nueva_contraseña"
+}</pre>`
+            }
+            <p>Este token expirará en 1 hora.</p>
             <p>Si no solicitaste este cambio, ignora este correo.</p>
         `,
     };

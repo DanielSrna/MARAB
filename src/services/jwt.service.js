@@ -114,11 +114,16 @@ export const verifyRefreshToken = async (refreshToken) => {
             process.env.REFRESH_TOKEN_SECRET
         );
 
-        // Encriptar el token recibido para compararlo con el almacenado
-        const encryptedToken = encrypt(refreshToken);
-        const storedToken = await RefreshToken.findOne({ userId: decoded.id, refreshToken: encryptedToken });
-        if (!storedToken) {
+        // Buscar el documento del usuario en la BD
+        const storedTokenDoc = await RefreshToken.findOne({ userId: decoded.id });
+        if (!storedTokenDoc) {
             throw new Error("Refresh token no válido o no encontrado");
+        }
+
+        // Desencriptar el token almacenado y compararlo
+        const decryptedStoredToken = decrypt(storedTokenDoc.refreshToken);
+        if (decryptedStoredToken !== refreshToken) {
+            throw new Error("Refresh token no coincide");
         }
 
         return {
@@ -135,18 +140,32 @@ export const verifyRefreshToken = async (refreshToken) => {
 // Verificación de Verification Token
 export const verifyVerificationToken = async (verificationToken) => {
     try {
+        console.log("1. Verificando JWT...");
         const decoded = jwt.verify(
             verificationToken, 
             process.env.VERIFICATION_TOKEN_SECRET
         );
+        console.log("2. JWT válido, email:", decoded.email);
 
-        // Encriptar el token recibido para compararlo con el almacenado
-        const encryptedToken = encrypt(verificationToken);
-        const storedToken = await VerificationToken.findOne({ email: decoded.email, token: encryptedToken });
-        if (!storedToken) {
+        // Buscar el token encriptado en la BD por email
+        console.log("3. Buscando token en BD por email...");
+        const storedTokenDoc = await VerificationToken.findOne({ email: decoded.email });
+        console.log("4. Documento encontrado en BD:", !!storedTokenDoc);
+        
+        if (!storedTokenDoc) {
             throw new Error("Verification token no válido o no encontrado");
         }
 
+        // Desencriptar el token almacenado y compararlo
+        console.log("5. Desencriptando token almacenado...");
+        const decryptedStoredToken = decrypt(storedTokenDoc.token);
+        console.log("6. Comparando tokens...");
+        
+        if (decryptedStoredToken !== verificationToken) {
+            throw new Error("Verification token no coincide");
+        }
+
+        console.log("7. Token válido!");
         return {
             message: "Verification token válido",
             email: decoded.email
@@ -165,11 +184,16 @@ export const verifyResetPasswordToken = async (resetToken) => {
             process.env.RESET_PASSWORD_TOKEN_SECRET
         );
 
-        // Encriptar el token recibido para compararlo con el almacenado
-        const encryptedToken = encrypt(resetToken);
-        const storedToken = await ResetPasswordToken.findOne({ email: decoded.email, token: encryptedToken });
-        if (!storedToken) {
+        // Buscar el token en la BD por email
+        const storedTokenDoc = await ResetPasswordToken.findOne({ email: decoded.email });
+        if (!storedTokenDoc) {
             throw new Error("Reset password token no válido o no encontrado");
+        }
+
+        // Desencriptar el token almacenado y compararlo
+        const decryptedStoredToken = decrypt(storedTokenDoc.token);
+        if (decryptedStoredToken !== resetToken) {
+            throw new Error("Reset password token no coincide");
         }
 
         return {

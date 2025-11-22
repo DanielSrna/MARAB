@@ -29,7 +29,7 @@ export const authorize = (...roles) => {
         const User = (await import('../models/user.model.js')).default;
         
         try {
-            const user = await User.findById(req.user.userId);
+            const user = await User.findOne({ email: req.user.email });
             
             if (!user) {
                 return res.status(404).json({ message: 'Usuario no encontrado' });

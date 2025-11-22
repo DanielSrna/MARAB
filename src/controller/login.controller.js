@@ -5,14 +5,21 @@ export const loginUser = async (req, res) => {
     const { email, password, device } = req.body;
 
     try {
+        console.log("1. Buscando usuario con email:", email);
         // Buscar usuario por email
         const user = await User.findOne({ email });
         if (!user) {
+            console.log("2. Usuario NO encontrado");
             return res.status(400).json({ message: "Credenciales invalidas" });
         }
+        console.log("2. Usuario encontrado:", user.email);
 
         // Verificar contraseña
+        console.log("3. Verificando contraseña...");
+        console.log("   - Contraseña recibida:", password);
+        console.log("   - Hash en BD:", user.password);
         const isPasswordValid = await user.comparePassword(password);
+        console.log("4. Contraseña válida:", isPasswordValid);
         if (!isPasswordValid) {
             return res.status(400).json({ message: "Credenciales invalidas" });
         }
@@ -29,13 +36,7 @@ export const loginUser = async (req, res) => {
         res.status(200).json({
             message: "Login exitoso",
             accessToken,
-            refreshToken,
-            user: {
-                id: user._id,
-                user: user.user,
-                email: user.email,
-                role: user.role
-            }
+            refreshToken
         });
     } catch (error) {
         console.error("Error logging user:", error);

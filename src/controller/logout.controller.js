@@ -1,6 +1,5 @@
 import { verifyRefreshToken } from '../services/jwt.service.js';
 import RefreshToken from '../models/refreshT.schema.js';
-import { encrypt } from '../services/encryption.service.js';
 
 export const logoutUser = async (req, res) => {
     const { refreshToken } = req.body;
@@ -14,13 +13,9 @@ export const logoutUser = async (req, res) => {
         // Verificar el refresh token
         const decoded = await verifyRefreshToken(refreshToken);
 
-        // Encriptar el refresh token para buscarlo en la BD
-        const encryptedToken = encrypt(refreshToken);
-
-        // Eliminar el refresh token de la base de datos
+        // Eliminar el refresh token de la base de datos (buscar por userId)
         const result = await RefreshToken.deleteOne({ 
-            userId: decoded.userId, 
-            refreshToken: encryptedToken 
+            userId: decoded.userId
         });
 
         // Verificar si se eliminó algún token

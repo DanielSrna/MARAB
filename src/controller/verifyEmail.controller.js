@@ -10,7 +10,10 @@ export const verifyEmail = async (req, res) => {
     }
     
     try {
+        console.log("Token recibido:", token);
         const decoded = await verifyVerificationToken(token);
+        console.log("Token decodificado:", decoded);
+        
         const user = await User.findOne({ email: decoded.email });
 
         if (!user) {
@@ -26,6 +29,7 @@ export const verifyEmail = async (req, res) => {
         res.status(200).json({ message: "Correo electrónico verificado con éxito" });
     } catch (error) {
         console.error("Error al verificar el correo electrónico:", error);
+        console.error("Error completo:", error.message);
         res.status(400).json({ message: "Token inválido o expirado" });
     }
 };

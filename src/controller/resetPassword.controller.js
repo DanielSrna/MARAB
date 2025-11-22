@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import ResetPasswordToken from "../models/resetPasswordT.schema.js";
+import RefreshToken from "../models/refreshT.schema.js";
 import { sendResetPasswordEmail } from "../services/mailer.service.js";
 import { verifyResetPasswordToken } from "../services/jwt.service.js";
 
@@ -68,10 +69,15 @@ export const resetPassword = async (req, res) => {
         user.password = newPassword;
         await user.save();
 
+        // Eliminar TODOS los refresh tokens del usuario (cierra sesión en todos los dispositivos)
+        await RefreshToken.deleteMany({ userId: user._id });
+
         // Eliminar el token usado
         await ResetPasswordToken.deleteOne({ email: decoded.email });
 
-        res.status(200).json({ message: "Contraseña restablecida exitosamente" });
+        res.status(200).json({ 
+            message: "Contraseña restablecida exitosamente. Se ha cerrado sesión en todos los dispositivos." 
+        });
     } catch (error) {
         console.error("Error al restablecer contraseña:", error);
         
